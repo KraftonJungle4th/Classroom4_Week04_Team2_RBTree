@@ -1,0 +1,42 @@
+# 실행 파일 및 오브젝트 파일
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.out
+
+# 임시 파일
+*.tmp
+*.temp
+
+# 빌드 출력 디렉토리
+build/
+bin/
+out/
+
+# Visual Studio Code 설정
+.vscode/
+
+# Eclipse IDE 설정
+.project
+.classpath
+.settings/
+
+# Visual Studio 설정
+*.suo
+*.user
+*.userprefs
+*.sdf
+*.pdb
+*.opendb
+
+# 로그 파일 및 데이터베이스 파일
+*.log
+*.sql
+*.sqlite
+
+# Makefile 생성 파일
+Makefile.in
+Makefile.out
+
