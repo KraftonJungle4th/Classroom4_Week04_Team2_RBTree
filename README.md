@@ -1,3 +1,9 @@
+# <4주차 2팀 RBTree 과제 연습소>
+>>
+- 팀원  
+  - 박경원(pkw/), 이상림(lsl/), 최하빈(chb/)
+
+
 # Red-Black Tree 구현
 
 Balanced search tree로 많이 쓰이는 Red-black tree (이하 RB tree)를 C 언어로 구현하는 과제입니다.
