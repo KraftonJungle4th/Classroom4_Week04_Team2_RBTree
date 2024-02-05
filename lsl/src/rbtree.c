@@ -89,7 +89,7 @@ int rbtree_erase(rbtree *t, node_t *e_node)
     y->color = e_node->color;
   }
 
-    if (y_try_to_erase_color == RBTREE_BLACK)
+  if (y_try_to_erase_color == RBTREE_BLACK)
   {
     rbtree_erase_fixup(t, e_node);
   }
@@ -97,6 +97,136 @@ int rbtree_erase(rbtree *t, node_t *e_node)
   // TODO: implement erase
 
   return 0;
+}
+
+void rbtree_erase_fixup(rbtree *t, node_t *x)
+{
+  node_t *brother = NULL;
+  // 맞나??? 삭제노드x의 형제노드를 가리키는 포인터brother_node를 선언.
+
+  while (x != t->root && x->color == RBTREE_BLACK)
+  // 삭제노드가 Root노드가 아니며, 색이 Black이어서 지우기 곤란할 때
+  {
+    if (x == x->parent->left)
+    // 삭제노드가 왼자식일 때
+    {
+      brother = x->parent->right;
+      // 형제노드를 삭제노드의 형제로
+
+      // <경우 1> : 경우 2, 3, 4로 위임 가능
+      if (brother->color == RBTREE_RED)
+      // 형제노드가 Red일 때 (참고#1)
+      {
+        brother->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        // 형제노드를 Black으로 바꾸고, 부모노드를 Red로 바꿈( 형제노드가 Red이므로 부모가 무조건 Black이어야 한다 참고#1 )
+        left_rotate(t, x->parent);
+        // 삭제노드의 부모를 기준으로 회전
+        brother = x->parent->right;
+        // 회전을 끝내고 난 후에는 x->parent->right가 새로운 노드가 되고
+        // 밑의 if, else if, else 중 한 가지, 즉 경우 2, 3, 4의 한 가지로 위임된다.
+      }
+
+      // else (brother->color == RBTREE_BLACK){...} else는 indent 증가로 인해 따로 쓰지않음
+      // <경우 2> : x노드가 위쪽으로 바뀌는 경우
+      if (brother->left->color == RBTREE_BLACK && brother->right->color == RBTREE_BLACK)
+      // 형제의 자식들이 모두 Black이면 (+else까지 합치면 형제와그자식들 모두 Black)
+      {
+        brother->color = RBTREE_RED;
+        // x의 extra black을 x->parent로 넘긴다. 그러면서 w는 red가 된다.
+        x = x->parent;
+        // 새로운 x
+      }
+      else
+      // 형제의 자식들이 모두 Black은 아니면 (Red 1개이상 보유) (참고#2)
+      {
+        // <경우 3> : 경우 4로 위임 가능
+        if (brother->right->color == RBTREE_BLACK)
+        // 형제의 왼자식 (먼조카) 색이 Black이면 (= 형제의 오른자식(가까조카) 색이 Red 참고#2)
+        // 맞나??? 이거 brother->left->color == RBTREE_RED로 바뀌어야 할거같은데
+        {
+          brother->left->color = RBTREE_BLACK;
+          brother->color = RBTREE_RED;
+          // 형제(black)과 형제자식(red)를 서로 바꾼 후
+          right_rotate(t, brother);
+          // 오른쪽으로 돌린다
+          brother = x->parent->right;
+          // 형제노드를 새로 지정
+        }
+
+        // <경우 4> : 특성이 위반되는 것을 해결
+        brother->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        // 형제와 부모색 교환 (형제가 Black인 경우이므로 그냥 Black 하드코딩)
+        brother->right->color = RBTREE_BLACK;
+        // 자식 색 검정화
+        left_rotate(t, x->parent);
+        x = t->root;
+        // 경우 4를 거치면 특성 위반이 해결. x를 root로 설정하여 while문 탈출
+      }
+    }
+    else
+    // 삭제노드가 오른자식일 때 (MIRROR CASE)
+    {
+      brother = x->parent->left;
+      // 형제노드를 삭제노드의 형제로
+
+      // <경우 1> : 경우 2,3,4로 위임가능
+      if (brother->color == RBTREE_RED)
+      // 형제노드가 Red일 때 (참고#1)
+      {
+        brother->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        // 형제노드를 Black으로 바꾸고, 부모노드를 Red로 바꿈( 형제노드가 Red이므로 부모가 무조건 Black이어야 한다 참고#1 )
+        right_rotate(t, x->parent);
+        // 삭제노드의 부모를 기준으로 회전
+        brother = x->parent->left;
+        // 회전을 끝내고 난 후에는 x->parent->right가 새로운 노드가 되고
+        // 밑의 if, else if, else 중 한 가지, 즉 경우 2, 3, 4의 한 가지로 위임된다.
+      }
+
+      // else (brother->color == RBTREE_BLACK){...} else는 indent 증가로 인해 따로 쓰지않음
+      // <경우 2>
+      if (brother->right->color == RBTREE_BLACK && brother->left->color == RBTREE_BLACK)
+      {
+        // 형제의 자식들이 모두 Black이면 (+else까지 합치면 형제와그자식들 모두 Black)
+        brother->color = RBTREE_RED;
+        // x의 extra black을 x->parent로 넘긴다. 그러면서 w는 red가 된다.
+        x = x->parent;
+        // 새로운 x
+      }
+      else
+      // 형제의 자식들이 모두 Black은 아니면 (Red 1개이상 보유) (참고#2)
+      {
+        // <경우 3> : 경우 4로 위임 가능
+        if (brother->left->color == RBTREE_BLACK)
+        // 형제의 왼자식 (먼조카) 색이 Black이면 (= 형제의 오른자식(가까조카) 색이 Red 참고#2)
+        // 맞나??? 이거 brother->left->color == RBTREE_RED로 바뀌어야 할거같은데
+        {
+          brother->right->color = RBTREE_BLACK;
+          brother->color = RBTREE_RED;
+          // 형제(black)과 형제자식(red)를 서로 바꾼 후
+          left_rotate(t, brother);
+          // 왼쪽으로 돌린다
+          brother = x->parent->left;
+          // 형제노드를 새로 지정
+        }
+
+        // <경우 4> : 특성이 위반되는 것을 해결
+        brother->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        // 형제와 부모색 교환 (형제가 Black인 경우이므로 그냥 Black 하드코딩)
+        brother->left->color = RBTREE_BLACK;
+        // 자식 색 검정화
+        right_rotate(t, x->parent);
+        x = t->root;
+        // 경우 4를 거치면 특성 위반이 해결. x를 root로 설정하여 while문 탈출
+      }
+    }
+  }
+
+  x->color = RBTREE_BLACK;
+  // x가 root가 되면 Black속성 부여. 양쪽의 Black-height에 영향이 없으므로
 }
 
 /* 삭제하려는 노드의 대체노드에 각종 삭제정보를 이식하는 함수 */
