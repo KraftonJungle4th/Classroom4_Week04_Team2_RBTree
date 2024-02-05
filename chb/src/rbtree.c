@@ -3,7 +3,16 @@
 #include <stdlib.h>
 
 rbtree *new_rbtree(void) {
+
+  //tree 구주체 동적 할당
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
+
+  //nil 노드 생성 및 초기화
+  node_t *nil = (node_t *)calloc(1, sizeof(node_t));
+  nil->color = RBTREE_BLACK;
+
+  //tree의 nil과 root를 nil노드로 설정(tree가 빈 경우 root는 nil노드여야 함)
+  p->nil = p->root = nil;
 
   return p;
 }
@@ -15,6 +24,17 @@ void delete_rbtree(rbtree *t) {
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
   // TODO: implement insert
+  node_t * new_node =(node_t*)calloc(1,sizeof(node_t*));
+  node_t *y = t->nil;
+  node_t *x = t->root;
+  new_node->key = key;
+
+  while(x != y)
+  {
+    y = x;
+    if (key < x->key)
+      x = x->left;
+  }
 
   return t->root;
 }
