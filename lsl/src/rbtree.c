@@ -89,7 +89,7 @@ int rbtree_erase(rbtree *t, node_t *e_node)
     y->color = e_node->color;
   }
 
-    if (y_try_to_erase_color == RBTREE_BLACK)
+  if (y_try_to_erase_color == RBTREE_BLACK)
   {
     rbtree_erase_fixup(t, e_node);
   }
@@ -123,6 +123,102 @@ void rbtree_transplant(rbtree *t, node_t *u, node_t *v)
 
   v->parent = u->parent;
   // 삭제할 노드 u의 부모를 대체노드 v의 부모로 삼는다 (부모가 nil이어도 상관x)
+}
+
+/* 삭제 후, 재조정하는 함수 */
+void rbtree_erase_fixup(rbtree *t, node_t *e_node)
+{
+  node_t *b_node;
+  // 삭제할노드e_node의 형제노드b_node 포인터를 선언
+
+  while (e_node != t->root && e_node->color == RBTREE_BLACK)
+  { // x가 root가 되면 단순히 그냥 검은색으로 바꾸면된다. 그리고 while문 아래는 x가 doubly black일 떄 이뤄진다.
+    // doubly black인 x가 왼쪽 자식일 때
+    if (x == x->parent->left)
+    {
+      w = x->parent->right;
+
+      // <경우 1> : 경우 2, 3, 4로 위임 가능
+      if (w->color == RBTREE_RED)
+      {
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        left_rotate(t, x->parent);
+        w = x->parent->right; // 회전을 끝내고 난 후에는 x->parent->right가 새로운 노드가 되고 밑의 if, else if, else 중 한 가지, 즉 경우 2, 3, 4의 한 가지로 위임된다.
+      }
+
+      // 위의 if문을 만나지 않았으므로, w->color == RBTREE_BLACK인 경우이다.
+      // <경우 2> : 경우 1, 2, 3, 4로 위임 가능
+      // x->parent로 짬 때리는 경우이다.
+      if (w->left->color == RBTREE_BLACK && w->right->color == RBTREE_BLACK)
+      {
+        w->color = RBTREE_RED; // x의 extra black을 x->parent로 넘긴다. 그러면서 w는 red가 된다.
+        x = x->parent;         // 새롭게 doubly black 혹은 red and black이 x->parent이 짬 맞아서 재조정을 진행하도록 위임한다.
+      }
+      else
+      {
+
+        // <경우 3> : 경우 4로 위임 가능
+        if (w->right->color == RBTREE_BLACK)
+        {
+          w->left->color = RBTREE_BLACK;
+          w->color = RBTREE_RED;
+          right_rotate(t, w);
+          w = x->parent->right;
+        }
+
+        // <경우 4> : 특성이 위반되는 것을 해결한다. 경우 4는 다른 경우로 위임되지 않고 위반을 해결(특성을 만족)한다.
+        w->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        w->right->color = RBTREE_BLACK;
+        left_rotate(t, x->parent);
+        x = t->root; // 경우 4를 거치면 특성 위반이 해결되는 것이므로 x를 root로 설정하여 while문을 빠져나가도록 한다.
+      }
+
+      // doubly black인 x가 오른쪽 자식일 때
+    }
+    else
+    {
+      w = x->parent->left;
+
+      // <경우 1>
+      if (w->color == RBTREE_RED)
+      {
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        right_rotate(t, x->parent);
+        w = x->parent->left;
+      }
+
+      // <경우 2>
+      if (w->right->color == RBTREE_BLACK && w->left->color == RBTREE_BLACK)
+      {
+        w->color = RBTREE_RED;
+        x = x->parent;
+      }
+      else
+      {
+
+        // <경우 3>
+        if (w->left->color == RBTREE_BLACK)
+        {
+          w->right->color = RBTREE_BLACK;
+          w->color = RBTREE_RED;
+          left_rotate(t, w);
+          w = x->parent->left;
+        }
+
+        // <경우 4>
+        w->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        w->left->color = RBTREE_BLACK;
+        right_rotate(t, x->parent);
+        x = t->root;
+      }
+    }
+  }
+
+  x->color = RBTREE_BLACK;
 }
 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
