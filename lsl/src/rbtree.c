@@ -89,7 +89,7 @@ int rbtree_erase(rbtree *t, node_t *e_node)
     y->color = e_node->color;
   }
 
-  if (y_try_to_erase_color == RBTREE_BLACK)
+    if (y_try_to_erase_color == RBTREE_BLACK)
   {
     rbtree_erase_fixup(t, e_node);
   }
