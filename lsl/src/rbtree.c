@@ -40,62 +40,67 @@ node_t *rbtree_max(const rbtree *t)
 }
 
 /* 트리t에서 노드e_node를 삭제하는 함수 */
-int rbtree_erase(rbtree *t, node_t *e_node)
+int rbtree_erase(rbtree *t, node_t *erase)
 {
-  node_t *y = e_node;
-  // 삭제할노드를 가리키는 포인터 y
+  node_t *y = erase;
+  // 삭제할노드를 가리키는 포인터 y (후에 successor가 됨)
   color_t y_try_to_erase_color = y->color;
   // 삭제할 컬러를 미리 저장
-  node_t *x = NULL;
-  // 맞나??? 대체포인터 x 선언
+  node_t *e_child = NULL;
+  // 맞나??? y의 자식포인터 x 선언
 
-  if (e_node->left == t->nil)
+  if (erase->left == t->nil)
   // 참이면 오른자식만 있거나 둘다없음
   {
-    x = e_node->right;
+    e_child = erase->right;
     // 노드의 오른자식을 가리키게 함
-    rbtree_transplant(t, e_node, e_node->right);
+    rbtree_transplant(t, erase, erase->right);
   }
-  else if (e_node->right == t->nil)
+  else if (erase->right == t->nil)
   // 참이면 왼자식만 있음
   {
-    x = e_node->left;
+    e_child = erase->left;
     // 노드의 왼자식을 가리키게 함
-    rbtree_transplant(t, e_node, e_node->left);
+    rbtree_transplant(t, erase, erase->left);
   }
   else
   // 노드의 자식이 2명
   {
-    y = rbtree_min(e_node->right);
+    y = rbtree_min(erase->right);
     // 삭제될노드의 계승자를 찾는다
     y_try_to_erase_color = y->color;
     // 삭제할 노드의 색을 저장한다
-    x = y->right;
-    // 대체할노드에 삭제할 노드의 오른자식 할당
-    if (y->parent == e_node)
+    e_child = y->right;
+    // 대체할노드에 삭제할 노드의 오른자식 할당 (succesor 찾음)
+    if (y->parent == erase)
+    // successor의 부모가 바로 지워야 할 위치일때
     {
-      x->parent = y;
+      e_child->parent = y;
+      // erase자리를 erase자식의 부모로 바로할당
     }
     else
+    // successor가 몇칸 내려가는 경우일 때,
     {
       rbtree_transplant(t, y, y->right);
-      y->right = e_node->right;
+      // y자리의 오른쪽 부분 기준 나무심음
+      y->right = erase->right;
+      // 지울 노드의 오른자식을 y위치의 오른자식으로
       y->right->parent = y;
     }
 
-    rbtree_transplant(y, e_node, y->right);
-    y->left = e_node->left;
+    rbtree_transplant(y, erase, y->right);
+    // 실제 심는과정
+    y->left = erase->left;
     y->left->parent = y;
-    y->color = e_node->color;
+    y->color = erase->color;
   }
 
   if (y_try_to_erase_color == RBTREE_BLACK)
   {
-    rbtree_erase_fixup(t, e_node);
+    rbtree_erase_fixup(t, erase);
   }
 
-  // TODO: implement erase
-
+  free(erase);
   return 0;
 }
 
