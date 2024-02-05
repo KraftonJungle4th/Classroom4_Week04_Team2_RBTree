@@ -3,35 +3,64 @@
 #include <stdlib.h>
 
 rbtree *new_rbtree(void) {
+    rbtree *tree = (rbtree *)calloc(1, sizeof(rbtree));
+    if (tree == NULL) {
+        return NULL;
+    }
 
-  //tree 구주체 동적 할당
-  rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
+    node_t *nil_node = (node_t *)calloc(1, sizeof(node_t));
+    if (nil_node == NULL) {
+        free(tree);
+        return NULL;
+    }
 
-  //nil 노드 생성 및 초기화
-  node_t *nil = (node_t *)calloc(1, sizeof(node_t));
-  nil->color = RBTREE_BLACK;
+    nil_node->color = RBTREE_BLACK;
+    nil_node->parent = nil_node->left = nil_node->right = nil_node;
+    nil_node->key = 0;
 
-  //tree의 nil과 root를 nil노드로 설정(tree가 빈 경우 root는 nil노드여야 함)
-  p->nil = p->root = nil;
+    tree->nil = nil_node;
 
-  return p;
+#ifdef SENTINEL
+    tree->root = tree->nil;
+#else
+    tree->root = NULL;
+#endif
+
+    return tree;
 }
 
-void delete_rbtree(rbtree *t) {
-  // TODO: reclaim the tree nodes's memory
-  free(t);
+
+void post_order_free(rbtree *tree, node_t *node);
+
+void delete_rbtree(rbtree *tree) {
+    if (tree == NULL) return;
+
+    post_order_free(tree, tree->root);
+    free(tree->nil);
+    free(tree);
+}
+
+void post_order_free(rbtree *tree, node_t *node) {
+    if (node == NULL || node == tree->nil) return;
+
+    post_order_free(tree, node->left);
+    post_order_free(tree, node->right);
+    free(node);
 }
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
-  // TODO: implement insert
+
   node_t *new_node = (node_t*)calloc(1,sizeof(node_t));
-  // 새 노드를 삽입할 위치 탐색
+
+  //새 노드 생성
   new_node->key = key;
   new_node->left = new_node->right = t->nil;
   new_node->color = RBTREE_RED;
 
+  // 새 노드를 삽입할 위치 탐색
   node_t *current = t->root;
   node_t *parent = t->nil;
+
   while(current != t->nil)
   { 
     parent = current;
@@ -42,8 +71,11 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
     else
       current = current->right;
   }
+
+  //새 노드의 부모 지정
   new_node->parent = parent;
-      
+  
+  //root가 nil이면 새 노드를 트리의 루트로 지정
   if (parent == t->nil)
   {
       t->root = new_node;
@@ -56,12 +88,13 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   {
       parent->right = new_node;
   }
-
+  
   rbtree_insert_fixup(t, new_node);
 
   return t->root;
 }
 
+//노드 삽입 후 불균형을 복구하는 함수
 void rbtree_insert_fixup(rbtree *t, node_t * node)
 {
   node_t *parent = node->parent;
@@ -116,6 +149,7 @@ void rbtree_insert_fixup(rbtree *t, node_t * node)
   t->root->color = RBTREE_BLACK;
 }
 
+//왼쪽으로 회전
 void left_rotate(rbtree *t, node_t *node)
 {
   node_t *y = node->right;
@@ -134,6 +168,7 @@ void left_rotate(rbtree *t, node_t *node)
   node->parent = y;
 }
 
+//얼
 void right_rotate(rbtree *t, node_t *node)
 {
   node_t *y = node->left;
