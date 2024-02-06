@@ -1,47 +1,25 @@
 #include "rbtree.h"
+
 #include <stdlib.h>
 
-void post_order_free(rbtree *tree, node_t *node);
-void rbtree_insert_fixup(rbtree *t, node_t * node);
-void left_rotate(rbtree *t, node_t *node);
-void right_rotate(rbtree *t, node_t *node);
-
 rbtree *new_rbtree(void) {
-    rbtree *tree = (rbtree *)calloc(1, sizeof(rbtree));
-    if (tree == NULL) {
-        return NULL;
-    }
 
-    node_t *nil_node = (node_t *)calloc(1, sizeof(node_t));
-    if (nil_node == NULL) {
-        free(tree);
-        return NULL;
-    }
+  //tree 구주체 동적 할당
+  rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
 
-    nil_node->color = RBTREE_BLACK;
-    nil_node->parent = nil_node->left = nil_node->right = nil_node;
-    nil_node->key = 0;
+  //nil 노드 생성 및 초기화
+  node_t *nil = (node_t *)calloc(1, sizeof(node_t));
+  nil->color = RBTREE_BLACK;
 
-    tree->root = nil_node;
-    tree->nil = nil_node;
+  //tree의 nil과 root를 nil노드로 설정(tree가 빈 경우 root는 nil노드여야 함)
+  p->nil = p->root = nil;
 
-    return tree;
+  return p;
 }
 
-void delete_rbtree(rbtree *tree) {
-    if (tree == NULL) return;
-
-    post_order_free(tree, tree->root);
-    free(tree->nil);
-    free(tree);
-}
-
-void post_order_free(rbtree *tree, node_t *node) {
-    if (node == NULL || node == tree->nil) return;
-
-    post_order_free(tree, node->left);
-    post_order_free(tree, node->right);
-    free(node);
+void delete_rbtree(rbtree *t) {
+  // TODO: reclaim the tree nodes's memory
+  free(t);
 }
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
@@ -181,12 +159,20 @@ node_t *rbtree_find(const rbtree *t, const key_t key) {
 
 node_t *rbtree_min(const rbtree *t) {
   // TODO: implement find
-  return t->root;
+  node_t *current = t->root;
+  while(current->left != t->nil)
+    current = current->left;
+  
+  return current;
 }
 
 node_t *rbtree_max(const rbtree *t) {
   // TODO: implement find
-  return t->root;
+  node_t *current = t->root;
+  while(current->right != t->nil)
+  current = current->right;
+  
+  return current;
 }
 
 int rbtree_erase(rbtree *t, node_t *p) {
