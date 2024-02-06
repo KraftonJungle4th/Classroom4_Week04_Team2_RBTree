@@ -45,6 +45,7 @@ void post_order_free(rbtree *tree, node_t *node) {
 }
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
+  
   // TODO: implement insert
   node_t *new_node = (node_t*)calloc(1,sizeof(node_t));
   // 새 노드를 삽입할 위치 탐색
