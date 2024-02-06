@@ -45,6 +45,7 @@ void post_order_free(rbtree *tree, node_t *node) {
 }
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
+  
   // TODO: implement insert
   node_t *new_node = (node_t*)calloc(1,sizeof(node_t));
   // 새 노드를 삽입할 위치 탐색
@@ -181,12 +182,20 @@ node_t *rbtree_find(const rbtree *t, const key_t key) {
 
 node_t *rbtree_min(const rbtree *t) {
   // TODO: implement find
-  return t->root;
+  node_t *current = t->root;
+  while(current->left != t->nil)
+    current = current->left;
+  
+  return current;
 }
 
 node_t *rbtree_max(const rbtree *t) {
   // TODO: implement find
-  return t->root;
+  node_t *current = t->root;
+  while(current->right != t->nil)
+    current = current->right;
+  
+  return current;
 }
 
 int rbtree_erase(rbtree *t, node_t *p) {

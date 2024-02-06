@@ -1,6 +1,10 @@
 #include "rbtree.h"
-
 #include <stdlib.h>
+
+void post_order_free(rbtree *tree, node_t *node);
+void rbtree_insert_fixup(rbtree *t, node_t * node);
+void left_rotate(rbtree *t, node_t *node);
+void right_rotate(rbtree *t, node_t *node);
 
 rbtree *new_rbtree(void) {
     rbtree *tree = (rbtree *)calloc(1, sizeof(rbtree));
@@ -18,19 +22,11 @@ rbtree *new_rbtree(void) {
     nil_node->parent = nil_node->left = nil_node->right = nil_node;
     nil_node->key = 0;
 
+    tree->root = nil_node;
     tree->nil = nil_node;
-
-#ifdef SENTINEL
-    tree->root = tree->nil;
-#else
-    tree->root = NULL;
-#endif
 
     return tree;
 }
-
-
-void post_order_free(rbtree *tree, node_t *node);
 
 void delete_rbtree(rbtree *tree) {
     if (tree == NULL) return;
@@ -49,18 +45,15 @@ void post_order_free(rbtree *tree, node_t *node) {
 }
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
-
+  // TODO: implement insert
   node_t *new_node = (node_t*)calloc(1,sizeof(node_t));
-
-  //새 노드 생성
+  // 새 노드를 삽입할 위치 탐색
   new_node->key = key;
   new_node->left = new_node->right = t->nil;
   new_node->color = RBTREE_RED;
 
-  // 새 노드를 삽입할 위치 탐색
   node_t *current = t->root;
   node_t *parent = t->nil;
-
   while(current != t->nil)
   { 
     parent = current;
@@ -71,11 +64,8 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
     else
       current = current->right;
   }
-
-  //새 노드의 부모 지정
   new_node->parent = parent;
-  
-  //root가 nil이면 새 노드를 트리의 루트로 지정
+      
   if (parent == t->nil)
   {
       t->root = new_node;
@@ -88,13 +78,12 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   {
       parent->right = new_node;
   }
-  
+
   rbtree_insert_fixup(t, new_node);
 
   return t->root;
 }
 
-//노드 삽입 후 불균형을 복구하는 함수
 void rbtree_insert_fixup(rbtree *t, node_t * node)
 {
   node_t *parent = node->parent;
@@ -149,7 +138,6 @@ void rbtree_insert_fixup(rbtree *t, node_t * node)
   t->root->color = RBTREE_BLACK;
 }
 
-//왼쪽으로 회전
 void left_rotate(rbtree *t, node_t *node)
 {
   node_t *y = node->right;
@@ -168,7 +156,6 @@ void left_rotate(rbtree *t, node_t *node)
   node->parent = y;
 }
 
-//얼
 void right_rotate(rbtree *t, node_t *node)
 {
   node_t *y = node->left;
