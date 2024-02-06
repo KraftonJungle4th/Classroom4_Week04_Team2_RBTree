@@ -192,7 +192,7 @@ node_t *rbtree_max(const rbtree *t) {
   // TODO: implement find
   node_t *current = t->root;
   while(current->right != t->nil)
-  current = current->right;
+    current = current->right;
   
   return current;
 }
