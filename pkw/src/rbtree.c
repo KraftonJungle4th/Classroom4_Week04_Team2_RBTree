@@ -17,13 +17,8 @@ rbtree *new_rbtree(void) {
     nil_node->parent = nil_node->left = nil_node->right = nil_node;
     nil_node->key = 0;
 
+    tree->root = nil_node;
     tree->nil = nil_node;
-
-#ifdef SENTINEL
-    tree->root = tree->nil;
-#else
-    tree->root = NULL;
-#endif
 
     return tree;
 }
